@@ -10,6 +10,14 @@ import {
 import { formatCurrency } from './utils';
 
 export async function fetchRevenue() {
+  // Fetch the last 5 invoices, sorted by date
+const data = await sql<LatestInvoiceRaw>`
+SELECT invoices.amount, customers.name, customers.image_url, customers.email
+FROM invoices
+JOIN customers ON invoices.customer_id = customers.id
+ORDER BY invoices.date DESC
+LIMIT 5`;
+
   try {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
@@ -37,6 +45,8 @@ export async function fetchLatestInvoices() {
       ORDER BY invoices.date DESC
       LIMIT 5`;
 
+    
+
     const latestInvoices = data.rows.map((invoice) => ({
       ...invoice,
       amount: formatCurrency(invoice.amount),
@@ -59,6 +69,7 @@ export async function fetchCardData() {
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
+    
 
     const data = await Promise.all([
       invoiceCountPromise,
